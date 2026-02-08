@@ -1,0 +1,10 @@
+black
+build
+cryptography
+isort
+mypy
+pre-commit
+pytest
+pytest-cov
+ruff
+tox
