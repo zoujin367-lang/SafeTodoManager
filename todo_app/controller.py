@@ -7,7 +7,6 @@ import json
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List
 
 from .model import Task, TaskList
 from .storage import Storage
@@ -22,18 +21,18 @@ class Controller:
         self.storage = storage
         self.model = TaskList()
 
-    def load(self) -> List[Task]:
+    def load(self) -> list[Task]:
         try:
             tasks = self.storage.load_tasks()
             self.model.replace_all(tasks)
-            return self.model.list()
+            return self.model.tasks()
         except Exception:
             logger.exception("Failed to load tasks")
             raise
 
     def save(self) -> None:
         try:
-            self.storage.save_tasks(self.model.list())
+            self.storage.save_tasks(self.model.tasks())
         except Exception:
             logger.exception("Failed to save tasks")
             raise
@@ -54,13 +53,16 @@ class Controller:
             self.save()
         return task
 
-    def search(self, query: str) -> List[Task]:
+    def search(self, query: str) -> list[Task]:
         return self.model.search(query)
 
     def export_json(self, path: Path) -> None:
-        data = [_task_to_dict(task) for task in self.model.list()]
+        data = [_task_to_dict(task) for task in self.model.tasks()]
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(json.dumps(data, ensure_ascii=False, indent=2), encoding="utf-8")
+        path.write_text(
+            json.dumps(data, ensure_ascii=False, indent=2),
+            encoding="utf-8",
+        )
 
     def import_json(self, path: Path) -> None:
         data = json.loads(path.read_text(encoding="utf-8"))
@@ -73,7 +75,7 @@ class Controller:
         with path.open("w", encoding="utf-8", newline="") as handle:
             writer = csv.writer(handle)
             writer.writerow(["task_id", "title", "created_at"])
-            for task in self.model.list():
+            for task in self.model.tasks():
                 writer.writerow([task.task_id, task.title, task.created_at.isoformat()])
 
     def import_csv(self, path: Path) -> None:

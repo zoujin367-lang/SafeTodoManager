@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import argparse
+import contextlib
 import ctypes
 import getpass
 import logging
@@ -59,6 +60,7 @@ def run_ui(args: argparse.Namespace) -> int:
     controller = Controller(storage)
     controller.load()
     from .view_tk import TkView
+
     root.deiconify()
     TkView(root, controller)
     root.mainloop()
@@ -71,10 +73,8 @@ def _set_windows_dpi_awareness() -> None:
     try:
         ctypes.windll.shcore.SetProcessDpiAwareness(2)
     except Exception:
-        try:
+        with contextlib.suppress(Exception):
             ctypes.windll.user32.SetProcessDPIAware()
-        except Exception:
-            pass
 
 
 def export_tasks(args: argparse.Namespace) -> int:
@@ -104,7 +104,11 @@ def backup_tasks(args: argparse.Namespace) -> int:
 
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="To-Do List App")
-    parser.add_argument("--storage", choices=["fs", "sqlite", "encrypted"], default="fs")
+    parser.add_argument(
+        "--storage",
+        choices=["fs", "sqlite", "encrypted"],
+        default="fs",
+    )
     parser.add_argument("--data-dir", help="Override storage directory")
     parser.add_argument("--password", help="Password for encrypted storage")
 

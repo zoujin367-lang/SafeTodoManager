@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from abc import ABC, abstractmethod
-from typing import Iterable, List
+from collections.abc import Iterable
 
 from .model import Task
 
@@ -12,7 +12,7 @@ class Storage(ABC):
     """Abstract storage interface."""
 
     @abstractmethod
-    def load_tasks(self) -> List[Task]:
+    def load_tasks(self) -> list[Task]:
         raise NotImplementedError
 
     @abstractmethod

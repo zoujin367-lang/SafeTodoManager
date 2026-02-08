@@ -1,6 +1,7 @@
+import os
 import tkinter as tk
 from tkinter import messagebox
-import os
+
 
 class TodoApp:
     def __init__(self, root):
@@ -18,7 +19,11 @@ class TodoApp:
         self.task_listbox = tk.Listbox(root, width=40)
         self.task_listbox.pack(pady=10)
 
-        self.remove_button = tk.Button(root, text="Remove Task", command=self.remove_task)
+        self.remove_button = tk.Button(
+            root,
+            text="Remove Task",
+            command=self.remove_task,
+        )
         self.remove_button.pack()
 
         self.load_tasks()
@@ -50,7 +55,7 @@ class TodoApp:
 
     def load_tasks(self):
         if os.path.exists("tasks.txt"):
-            with open("tasks.txt", "r") as file:
+            with open("tasks.txt") as file:
                 self.tasks = file.read().splitlines()
             self.update_listbox()
 
@@ -59,10 +64,12 @@ class TodoApp:
             for task in self.tasks:
                 file.write(task + "\n")
 
+
 def main():
     root = tk.Tk()
-    app = TodoApp(root)
+    TodoApp(root)
     root.mainloop()
+
 
 if __name__ == "__main__":
     main()

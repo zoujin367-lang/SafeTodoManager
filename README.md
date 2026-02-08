@@ -148,6 +148,14 @@ mypy todo_app
 pytest --maxfail=1 --disable-warnings -q --cov=todo_app
 ```
 
+> When working from Windows, run the repo-installed linter so the options and version match CI.
+>
+> ```powershell
+> .\.venv\Scripts\python.exe -m ruff check .
+> ```
+>
+> Or activate the virtual environment first and run `ruff check .` directly.
+
 Run CI locally with tox:
 
 ```bash

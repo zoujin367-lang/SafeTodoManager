@@ -7,8 +7,9 @@ import json
 import os
 import tempfile
 import threading
+from collections.abc import Iterable
 from pathlib import Path
-from typing import Any, Iterable, List, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from .model import Task
 from .storage import Storage
@@ -16,18 +17,12 @@ from .storage_fs import BACKUP_COUNT, _parse_dt, _rotate_backups, _task_to_dict
 
 if TYPE_CHECKING:
     from cryptography.fernet import Fernet as FernetType
+    from cryptography.fernet import InvalidToken as InvalidTokenType
+    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC as PBKDF2HMACType
 else:
     FernetType = Any
-
-try:
-    from cryptography.fernet import Fernet, InvalidToken
-    from cryptography.hazmat.primitives import hashes
-    from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
-except Exception:  # pragma: no cover - optional dependency
-    Fernet = None
-    InvalidToken = Exception
-    PBKDF2HMAC = None
-    hashes = None
+    InvalidTokenType = Exception
+    PBKDF2HMACType = Any
 
 SALT_BYTES = 16
 ITERATIONS = 390_000
@@ -37,10 +32,12 @@ class EncryptedFileStorage(Storage):
     """Encrypt tasks with a password-derived key."""
 
     def __init__(self, path: Path, password: str, iterations: int = ITERATIONS) -> None:
-        if Fernet is None or PBKDF2HMAC is None:
-            raise RuntimeError(
-                "cryptography is required for encrypted storage. Install extras: pip install .[encrypt]"
-            )
+        (
+            self._fernet_cls,
+            self._invalid_token,
+            self._hashes_module,
+            self._pbkdf2_cls,
+        ) = _import_crypto_components()
         if not password:
             raise ValueError("Password must be provided for encrypted storage.")
         self.path = path
@@ -49,7 +46,7 @@ class EncryptedFileStorage(Storage):
         self.iterations = iterations
         self._lock = threading.Lock()
 
-    def load_tasks(self) -> List[Task]:
+    def load_tasks(self) -> list[Task]:
         with self._lock:
             if not self.path.exists():
                 return []
@@ -58,13 +55,20 @@ class EncryptedFileStorage(Storage):
             salt = base64.b64decode(payload["salt"])
             token = payload["token"].encode("utf-8")
             iterations = int(payload.get("iterations", self.iterations))
-            fernet = _build_fernet(self.password, salt, iterations)
+            fernet = _build_fernet(
+                password=self.password,
+                salt=salt,
+                iterations=iterations,
+                fernet_cls=self._fernet_cls,
+                hashes_module=self._hashes_module,
+                pbkdf2_cls=self._pbkdf2_cls,
+            )
             try:
                 decrypted = fernet.decrypt(token)
-            except InvalidToken as exc:
+            except self._invalid_token as exc:
                 raise ValueError("Invalid password or corrupted file.") from exc
             lines = decrypted.decode("utf-8").splitlines()
-            tasks: List[Task] = []
+            tasks: list[Task] = []
             for line in lines:
                 if not line.strip():
                     continue
@@ -82,7 +86,14 @@ class EncryptedFileStorage(Storage):
         with self._lock:
             _rotate_backups(self.path, backup_count=BACKUP_COUNT)
             salt = os.urandom(SALT_BYTES)
-            fernet = _build_fernet(self.password, salt, self.iterations)
+            fernet = _build_fernet(
+                password=self.password,
+                salt=salt,
+                iterations=self.iterations,
+                fernet_cls=self._fernet_cls,
+                hashes_module=self._hashes_module,
+                pbkdf2_cls=self._pbkdf2_cls,
+            )
             plaintext = "\n".join(
                 json.dumps(_task_to_dict(task), ensure_ascii=False) for task in tasks
             ).encode("utf-8")
@@ -95,15 +106,22 @@ class EncryptedFileStorage(Storage):
             _atomic_write_bytes(self.path, json.dumps(payload).encode("utf-8"))
 
 
-def _build_fernet(password: str, salt: bytes, iterations: int) -> FernetType:
-    kdf = PBKDF2HMAC(
-        algorithm=hashes.SHA256(),
+def _build_fernet(
+    password: str,
+    salt: bytes,
+    iterations: int,
+    fernet_cls: type[FernetType],
+    hashes_module: Any,
+    pbkdf2_cls: type[PBKDF2HMACType],
+) -> FernetType:
+    kdf = pbkdf2_cls(
+        algorithm=hashes_module.SHA256(),
         length=32,
         salt=salt,
         iterations=iterations,
     )
     key = base64.urlsafe_b64encode(kdf.derive(password.encode("utf-8")))
-    return Fernet(key)
+    return fernet_cls(key)
 
 
 def _atomic_write_bytes(path: Path, data: bytes) -> None:
@@ -119,3 +137,21 @@ def _atomic_write_bytes(path: Path, data: bytes) -> None:
     finally:
         if temp_path.exists():
             temp_path.unlink(missing_ok=True)
+
+
+def _import_crypto_components() -> tuple[
+    type[FernetType],
+    type[InvalidTokenType],
+    Any,
+    type[PBKDF2HMACType],
+]:
+    try:
+        from cryptography.fernet import Fernet, InvalidToken
+        from cryptography.hazmat.primitives import hashes
+        from cryptography.hazmat.primitives.kdf.pbkdf2 import PBKDF2HMAC
+    except ImportError as exc:  # pragma: no cover - optional dependency
+        raise RuntimeError(
+            "cryptography is required for encrypted storage. "
+            "Install extras: pip install .[encrypt]"
+        ) from exc
+    return Fernet, InvalidToken, hashes, PBKDF2HMAC

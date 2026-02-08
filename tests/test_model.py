@@ -9,7 +9,7 @@ def test_add_and_list():
     tasks = TaskList()
     task = tasks.add("Buy milk")
     assert task.title == "Buy milk"
-    assert tasks.list() == [task]
+    assert tasks.tasks() == [task]
 
 
 def test_add_rejects_empty():
@@ -22,9 +22,9 @@ def test_remove_and_undo():
     tasks = TaskList()
     task = tasks.add("Task")
     tasks.remove_by_id(task.task_id)
-    assert tasks.list() == []
+    assert tasks.tasks() == []
     tasks.undo_last_removal()
-    assert len(tasks.list()) == 1
+    assert len(tasks.tasks()) == 1
 
 
 def test_search_filters():

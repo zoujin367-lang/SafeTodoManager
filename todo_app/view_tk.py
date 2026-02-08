@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import contextlib
 import ctypes
 import logging
 import sys
@@ -20,7 +21,11 @@ class TkView:
     """Tkinter view bound to a controller."""
 
     def __init__(
-        self, root: tk.Tk | tk.Toplevel, controller: Controller, *, private_mode: bool = False
+        self,
+        root: tk.Tk | tk.Toplevel,
+        controller: Controller,
+        *,
+        private_mode: bool = False,
     ) -> None:
         self.root = root
         self.controller = controller
@@ -180,11 +185,12 @@ class TkView:
         if self._center_windows():
             return
 
-        try:
-            self.root.eval("tk::PlaceWindow . center")
-            return
-        except tk.TclError:
-            pass
+        if isinstance(self.root, tk.Tk):
+            try:
+                self.root.eval("tk::PlaceWindow . center")
+                return
+            except tk.TclError:
+                pass
 
         width = self.root.winfo_width() or self.root.winfo_reqwidth()
         height = self.root.winfo_height() or self.root.winfo_reqheight()
@@ -203,10 +209,8 @@ class TkView:
             return False
 
         user32 = ctypes.windll.user32
-        try:
+        with contextlib.suppress(AttributeError):
             user32.SetProcessDPIAware()
-        except AttributeError:
-            pass
 
         class MonitorInfo(ctypes.Structure):
             _fields_ = [
@@ -245,11 +249,11 @@ class TkView:
         swp_nosize = 0x0001
         swp_nozorder = 0x0004
         swp_noactivate = 0x0010
-        if not user32.SetWindowPos(
-            hwnd, 0, x, y, 0, 0, swp_nosize | swp_nozorder | swp_noactivate
-        ):
-            return False
-        return True
+        return bool(
+            user32.SetWindowPos(
+                hwnd, 0, x, y, 0, 0, swp_nosize | swp_nozorder | swp_noactivate
+            )
+        )
 
     def _prompt_password_dialog(self, title: str) -> str | None:
         dialog = tk.Toplevel(self.root)
@@ -303,7 +307,10 @@ class TkView:
             return
 
         data_dir = get_user_data_dir()
-        storage = EncryptedFileStorage(data_dir / "private_tasks.enc", password=password)
+        storage = EncryptedFileStorage(
+            data_dir / "private_tasks.enc",
+            password=password,
+        )
         controller = Controller(storage)
         try:
             controller.load()

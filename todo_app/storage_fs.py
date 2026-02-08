@@ -7,9 +7,9 @@ import os
 import shutil
 import tempfile
 import threading
+from collections.abc import Iterable
 from datetime import datetime
 from pathlib import Path
-from typing import Iterable, List
 
 from .model import Task
 from .storage import Storage
@@ -25,11 +25,11 @@ class FileStorage(Storage):
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
 
-    def load_tasks(self) -> List[Task]:
+    def load_tasks(self) -> list[Task]:
         with self._lock:
             if not self.path.exists():
                 return []
-            tasks: List[Task] = []
+            tasks: list[Task] = []
             with self.path.open("r", encoding="utf-8") as handle:
                 for line in handle:
                     line = line.strip()
@@ -48,7 +48,9 @@ class FileStorage(Storage):
     def save_tasks(self, tasks: Iterable[Task]) -> None:
         with self._lock:
             _rotate_backups(self.path, BACKUP_COUNT)
-            lines = [json.dumps(_task_to_dict(task), ensure_ascii=False) for task in tasks]
+            lines = [
+                json.dumps(_task_to_dict(task), ensure_ascii=False) for task in tasks
+            ]
             data = "\n".join(lines) + ("\n" if lines else "")
             _atomic_write_text(self.path, data)
 

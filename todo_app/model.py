@@ -2,9 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Iterable
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
-from typing import Iterable, List
+from datetime import UTC, datetime
 from uuid import uuid4
 
 
@@ -13,7 +13,7 @@ class Task:
     """Represents a single to-do task."""
 
     title: str
-    created_at: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
+    created_at: datetime = field(default_factory=lambda: datetime.now(UTC))
     task_id: str = field(default_factory=lambda: uuid4().hex)
 
     def display(self) -> str:
@@ -25,7 +25,7 @@ class TaskList:
     """In-memory task list with search and undo support."""
 
     def __init__(self, tasks: Iterable[Task] | None = None) -> None:
-        self._tasks: List[Task] = list(tasks or [])
+        self._tasks: list[Task] = list(tasks or [])
         self._last_removed: Task | None = None
 
     def add(self, title: str) -> Task:
@@ -52,13 +52,13 @@ class TaskList:
         self._last_removed = None
         return task
 
-    def list(self) -> List[Task]:
+    def tasks(self) -> list[Task]:
         return list(self._tasks)
 
-    def search(self, query: str) -> List[Task]:
+    def search(self, query: str) -> list[Task]:
         query = query.strip().lower()
         if not query:
-            return self.list()
+            return self.tasks()
         return [task for task in self._tasks if query in task.title.lower()]
 
     def replace_all(self, tasks: Iterable[Task]) -> None:
