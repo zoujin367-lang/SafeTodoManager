@@ -1,6 +1,14 @@
 
 # To-Do List App
 
+[![Python](https://img.shields.io/badge/python-3.10%2B-blue)](https://www.python.org/)
+[![CI](https://github.com/SagarBiswas-MultiHAT/todo-list-app/actions/workflows/python-ci.yml/badge.svg)](https://github.com/SagarBiswas-MultiHAT/todo-list-app/actions)
+[![Tests](https://github.com/SagarBiswas-MultiHAT/todo-list-app/actions/workflows/python-ci.yml/badge.svg)](https://github.com/SagarBiswas-MultiHAT/todo-list-app/actions)
+[![Coverage](https://codecov.io/gh/SagarBiswas-MultiHAT/todo-list-app/branch/main/graph/badge.svg)](https://codecov.io/gh/SagarBiswas-MultiHAT/todo-list-app)
+[![PyPI](https://img.shields.io/pypi/v/todo-app.svg)](https://pypi.org/project/todo-app)
+[![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+[![Release](https://img.shields.io/github/v/release/SagarBiswas-MultiHAT/todo-list-app.svg)](https://github.com/SagarBiswas-MultiHAT/todo-list-app/releases)
+
 A production-ready, offline-first To-Do List application built with Python and Tkinter. It ships with a clean UI, structured storage backends, optional encryption, robust logging, and full developer tooling.
 
 ## Features
