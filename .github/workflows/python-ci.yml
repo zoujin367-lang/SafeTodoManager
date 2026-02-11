@@ -9,7 +9,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
+        id: checkout
         uses: actions/checkout@v4
+        continue-on-error: true
+      - name: Fallback source download (if checkout failed)
+        if: steps.checkout.outcome == 'failure'
+        run: |
+          set -euo pipefail
+          echo "Primary checkout failed. Falling back to source archive download."
+          archive_url="https://codeload.github.com/${GITHUB_REPOSITORY}/tar.gz/${GITHUB_SHA}"
+          curl -fsSL --retry 5 --retry-delay 2 --retry-all-errors "$archive_url" -o source.tgz
+          find "$GITHUB_WORKSPACE" -mindepth 1 -maxdepth 1 -exec rm -rf {} +
+          tar -xzf source.tgz --strip-components=1 -C "$GITHUB_WORKSPACE"
+          rm -f source.tgz
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
