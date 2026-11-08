@@ -33,3 +33,9 @@ Thumbs.db
 
 # Local backups (if machine-specific)
 backups/
+
+
+# 课程作业补充：构建产物与打包结果不进仓库
+*.exe
+*.msi
+*.zip
