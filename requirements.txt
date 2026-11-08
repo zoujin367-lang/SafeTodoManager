@@ -1,0 +1,13 @@
+# SafeTodoManager 运行依赖清单（课程作业补充）
+#
+# 运行时依赖：无。
+# 本项目只使用 Python 标准库：tkinter、sqlite3、csv、json、argparse、logging 等。
+# 对应 pyproject.toml 中的 dependencies = []。
+#
+# 环境要求：Python 3.11+，且安装时勾选 "tcl/tk and IDLE"（否则 import tkinter 会失败）。
+#
+# 可选功能「加密存储」需要（不使用该功能时可不装）：
+# cryptography>=42
+#
+# 仅打包时需要，程序运行时不需要：
+# pyinstaller

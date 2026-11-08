@@ -214,3 +214,17 @@ See [SECURITY.md](SECURITY.md) for the threat model and secure defaults.
 ## Contributing
 
 See [CONTRIBUTING.md](CONTRIBUTING.md).
+
+
+## 本地运行说明（课程作业补充）
+
+- 测试环境：Windows 11，Python 3.13.17，Tkinter 8.6（Python 官方安装包自带，安装时需勾选 "tcl/tk and IDLE"）。
+- 运行依赖：见 `requirements.txt`。本项目 `pyproject.toml` 中 `dependencies = []`，运行时不依赖任何第三方库。
+- 启动命令（在仓库根目录执行）：
+
+```bash
+python -m todo_app
+```
+
+- Windows 上若同时装有多个 Python，请用 `py -3 -m todo_app` 指定带 tkinter 的解释器；也可双击 `run_todo_app.bat`。
+- 可选：无界面导出 `python -m todo_app export --format json --output backups/tasks.json`。
