@@ -35,7 +35,7 @@ class TkView:
         self._search_job: str | None = None
         self._last_query = ""
 
-        self.root.title("To-Do List App")
+        self.root.title("我的待办清单")
         self.root.minsize(420, 480)
 
         self._build_menu()
@@ -50,63 +50,63 @@ class TkView:
         menu = tk.Menu(self.root)
         file_menu = tk.Menu(menu, tearoff=0)
         file_menu.add_command(
-            label="Import JSON",
+            label="导入 JSON",
             command=self.import_json,
             accelerator="Ctrl+I",
         )
         file_menu.add_command(
-            label="Export JSON",
+            label="导出 JSON",
             command=self.export_json,
             accelerator="Ctrl+E",
         )
         file_menu.add_command(
-            label="Import CSV",
+            label="导入 CSV",
             command=self.import_csv,
             accelerator="Ctrl+Shift+I",
         )
         file_menu.add_command(
-            label="Export CSV",
+            label="导出 CSV",
             command=self.export_csv,
             accelerator="Ctrl+Shift+E",
         )
         file_menu.add_separator()
-        file_menu.add_command(label="Exit", command=self.root.quit)
-        menu.add_cascade(label="File", menu=file_menu)
+        file_menu.add_command(label="退出", command=self.root.quit)
+        menu.add_cascade(label="文件", menu=file_menu)
 
         io_menu = tk.Menu(menu, tearoff=0)
         io_menu.add_command(
-            label="Import JSON",
+            label="导入 JSON",
             command=self.import_json,
             accelerator="Ctrl+I",
         )
         io_menu.add_command(
-            label="Export JSON",
+            label="导出 JSON",
             command=self.export_json,
             accelerator="Ctrl+E",
         )
         io_menu.add_command(
-            label="Import CSV",
+            label="导入 CSV",
             command=self.import_csv,
             accelerator="Ctrl+Shift+I",
         )
         io_menu.add_command(
-            label="Export CSV",
+            label="导出 CSV",
             command=self.export_csv,
             accelerator="Ctrl+Shift+E",
         )
-        menu.add_cascade(label="Import/Export", menu=io_menu)
+        menu.add_cascade(label="导入 / 导出", menu=io_menu)
 
         if not self.private_mode:
             private_menu = tk.Menu(menu, tearoff=0)
             private_menu.add_command(
-                label="Open Private Tasks",
+                label="打开私密任务",
                 command=lambda: self._open_private_tasks(focus_entry=False),
             )
             private_menu.add_command(
-                label="New Private Task",
+                label="新建私密任务",
                 command=lambda: self._open_private_tasks(focus_entry=True),
             )
-            menu.add_cascade(label="Private Tasks", menu=private_menu)
+            menu.add_cascade(label="私密任务", menu=private_menu)
         self.root.config(menu=menu)
 
     def _build_widgets(self) -> None:
@@ -117,12 +117,12 @@ class TkView:
         self.task_entry.pack(pady=(0, 6), fill=tk.X)
         self.task_entry.bind("<Return>", lambda _event: self.add_task())
 
-        self.add_button = tk.Button(frame, text="Add Task", command=self.add_task)
+        self.add_button = tk.Button(frame, text="添加任务", command=self.add_task)
         self.add_button.pack(pady=(0, 10))
 
         search_frame = tk.Frame(frame)
         search_frame.pack(fill=tk.X)
-        tk.Label(search_frame, text="Search:").pack(side=tk.LEFT)
+        tk.Label(search_frame, text="搜索：").pack(side=tk.LEFT)
         self.search_var = tk.StringVar()
         self.search_entry = tk.Entry(search_frame, textvariable=self.search_var)
         self.search_entry.pack(side=tk.LEFT, fill=tk.X, expand=True, padx=(6, 0))
@@ -134,15 +134,15 @@ class TkView:
         button_frame = tk.Frame(frame)
         button_frame.pack(fill=tk.X)
         self.remove_button = tk.Button(
-            button_frame, text="Remove Task", command=self.remove_task
+            button_frame, text="删除任务", command=self.remove_task
         )
         self.remove_button.pack(side=tk.LEFT, expand=True, fill=tk.X, padx=(0, 6))
         self.undo_button = tk.Button(
-            button_frame, text="Undo Remove", command=self.undo_remove
+            button_frame, text="撤销删除", command=self.undo_remove
         )
         self.undo_button.pack(side=tk.LEFT, expand=True, fill=tk.X)
 
-        self.status_var = tk.StringVar(value="Ready")
+        self.status_var = tk.StringVar(value="就绪")
         status = tk.Label(self.root, textvariable=self.status_var, anchor="w")
         status.pack(fill=tk.X, padx=12, pady=(0, 8))
 
@@ -266,7 +266,7 @@ class TkView:
         height = 150
         self._center_child_window(dialog, width, height)
 
-        label = tk.Label(dialog, text="Enter storage password:")
+        label = tk.Label(dialog, text="请输入存储密码：")
         label.pack(pady=(12, 6))
         entry = tk.Entry(dialog, show="*")
         entry.pack(padx=16, fill=tk.X)
@@ -285,10 +285,10 @@ class TkView:
 
         button_frame = tk.Frame(dialog)
         button_frame.pack(pady=12)
-        tk.Button(button_frame, text="OK", width=10, command=confirm).pack(
+        tk.Button(button_frame, text="确定", width=10, command=confirm).pack(
             side=tk.LEFT, padx=8
         )
-        tk.Button(button_frame, text="Cancel", width=10, command=cancel).pack(
+        tk.Button(button_frame, text="取消", width=10, command=cancel).pack(
             side=tk.LEFT, padx=8
         )
         dialog.protocol("WM_DELETE_WINDOW", cancel)
@@ -296,14 +296,14 @@ class TkView:
         return result["value"]
 
     def _open_private_tasks(self, *, focus_entry: bool) -> None:
-        password = self._prompt_password_dialog("Encrypted Storage")
+        password = self._prompt_password_dialog("加密存储")
         if not password:
             return
 
         try:
             from .storage_encrypted import EncryptedFileStorage
         except Exception as exc:
-            messagebox.showerror("Encrypted Storage", str(exc))
+            messagebox.showerror("加密存储", str(exc))
             return
 
         data_dir = get_user_data_dir()
@@ -315,11 +315,11 @@ class TkView:
         try:
             controller.load()
         except Exception as exc:
-            messagebox.showerror("Encrypted Storage", str(exc))
+            messagebox.showerror("加密存储", str(exc))
             return
 
         private_root = tk.Toplevel(self.root)
-        private_root.title("Private Tasks")
+        private_root.title("私密任务")
         view = TkView(private_root, controller, private_mode=True)
         if focus_entry:
             view.task_entry.focus_set()
@@ -338,7 +338,7 @@ class TkView:
         for task in tasks:
             self.task_listbox.insert(tk.END, task.display())
         total = len(tasks)
-        label = "Private tasks" if self.private_mode else "Tasks"
+        label = "私密任务数" if self.private_mode else "任务数"
         self.status_var.set(f"{label}: {total}")
 
     def _schedule_refresh(self) -> None:
@@ -353,7 +353,7 @@ class TkView:
     def add_task(self) -> None:
         title = self.task_entry.get().strip()
         if not title:
-            messagebox.showwarning("Warning", "Please enter a task.")
+            messagebox.showwarning("提示", "请输入任务内容。")
             return
         try:
             self.controller.add_task(title)
@@ -361,12 +361,12 @@ class TkView:
             self.refresh()
         except Exception as exc:
             logger.exception("Add task failed")
-            messagebox.showerror("Error", str(exc))
+            messagebox.showerror("错误", str(exc))
 
     def remove_task(self) -> None:
         selection = self.task_listbox.curselection()
         if not selection:
-            messagebox.showwarning("Warning", "Please select a task to remove.")
+            messagebox.showwarning("提示", "请先选中要删除的任务。")
             return
         index = selection[0]
         task_id = self.displayed_task_ids[index]
@@ -375,12 +375,12 @@ class TkView:
             self.refresh()
         except Exception as exc:
             logger.exception("Remove task failed")
-            messagebox.showerror("Error", str(exc))
+            messagebox.showerror("错误", str(exc))
 
     def undo_remove(self) -> None:
         task = self.controller.undo_remove()
         if task is None:
-            messagebox.showinfo("Undo", "Nothing to undo.")
+            messagebox.showinfo("撤销", "没有可撤销的操作。")
             return
         self.refresh()
 
@@ -389,7 +389,7 @@ class TkView:
         if not path:
             return
         self.controller.export_json(path)
-        messagebox.showinfo("Export", "Tasks exported to JSON.")
+        messagebox.showinfo("导出", "任务已导出为 JSON。")
 
     def import_json(self) -> None:
         path = self._prompt_open_path("json")
@@ -397,14 +397,14 @@ class TkView:
             return
         self.controller.import_json(path)
         self.refresh()
-        messagebox.showinfo("Import", "Tasks imported from JSON.")
+        messagebox.showinfo("导入", "已从 JSON 导入任务。")
 
     def export_csv(self) -> None:
         path = self._prompt_save_path("csv")
         if not path:
             return
         self.controller.export_csv(path)
-        messagebox.showinfo("Export", "Tasks exported to CSV.")
+        messagebox.showinfo("导出", "任务已导出为 CSV。")
 
     def import_csv(self) -> None:
         path = self._prompt_open_path("csv")
@@ -412,7 +412,7 @@ class TkView:
             return
         self.controller.import_csv(path)
         self.refresh()
-        messagebox.showinfo("Import", "Tasks imported from CSV.")
+        messagebox.showinfo("导入", "已从 CSV 导入任务。")
 
     def _prompt_save_path(self, ext: str) -> Path | None:
         filetypes = [(ext.upper(), f"*.{ext}")]

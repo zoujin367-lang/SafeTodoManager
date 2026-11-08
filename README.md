@@ -228,3 +228,28 @@ python -m todo_app
 
 - Windows 上若同时装有多个 Python，请用 `py -3 -m todo_app` 指定带 tkinter 的解释器；也可双击 `run_todo_app.bat`。
 - 可选：无界面导出 `python -m todo_app export --format json --output backups/tasks.json`。
+
+
+## 项目来源与本次改造
+
+- 原仓库：<https://github.com/SagarBiswas-MultiHAT/SafeTodoManager>，MIT 许可，本仓库为其 Fork 后的课程作业改造版。
+- 改动 1：应用名／主窗口标题由 `To-Do List App` 改为 `我的待办清单`（`todo_app/view_tk.py`）。
+- 改动 2：主界面菜单、按钮、状态栏与提示文案中文化（同一个文件）。
+- 改动均在 `feature/my-mod` 分支完成，通过 PR 合并回 `main`。
+
+## 构建与打包
+
+按仓库原有的 PyInstaller 方式，产物为同格式的 Windows 可执行文件：
+
+```bash
+python -m pip install pyinstaller
+pyinstaller todo-app.spec
+```
+
+产物位于 `dist/todo-app.exe`，可直接双击运行。等价命令（原 README 已给出）：
+
+```bash
+pyinstaller --onefile --noconsole --name todo-app todo_app/__main__.py
+```
+
+`dist/`、`build/`、`.venv/`、`*.exe` 已写入 `.gitignore`，构建产物只上传 Releases，不提交进仓库。
